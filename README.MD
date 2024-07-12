@@ -2,7 +2,7 @@
 
 Retrieval-Augmented Generation (RAG) with Large Language Model (LLM) using llama-index library and Ollama.
 
-Ollama untuk enabler local local dengan easy setup
+Ollama untuk enabler local LLM dengan easy setup
 
 Library llama-index sebagai framework RAG, dengan SimpleDirectoryReader, membaca seluruh dokumen dalam folder yang ditentukan
 
@@ -37,7 +37,7 @@ recomended using venv
 
 ### run app
 
-> python app.py
+> streamlit run app.py
 
 ## Powered by
 
@@ -45,4 +45,4 @@ Ollama <https://ollama.com/>
 
 llama-index <https://docs.llamaindex.ai/en/stable/>
 
-Gradio <https://www.gradio.app/>
+Gradio <https://streamlit.io/>
