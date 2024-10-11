@@ -1,11 +1,12 @@
 import streamlit as st
 from llama_index.llms.ollama import Ollama
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ChatPromptTemplate, Settings, set_global_tokenizer
+from llama_index.core import VectorStoreIndex, SimpleDirectoryReader, ChatPromptTemplate, Settings, set_global_tokenizer, StorageContext, load_index_from_storage
 from transformers import AutoTokenizer
 from datetime import datetime
 from llama_index.core.memory import ChatMemoryBuffer
 import time
+import os
 
 # Define the data directory for loading documents
 DATA_DIR = "docs"
@@ -22,7 +23,6 @@ if not st.session_state.is_initialized:
     # Initialize LLM
     llm = Ollama(model="llama2", request_timeout=180.0)
 
-    print("# embed_model", datetime.now())
     # Initialize HuggingFace Embedding Model for Vectorization
     embed_model = HuggingFaceEmbedding(
         model_name="BAAI/bge-small-en-v1.5"
@@ -33,12 +33,22 @@ if not st.session_state.is_initialized:
         AutoTokenizer.from_pretrained("NousResearch/Llama-2-7b-chat-hf").encode
     )
 
-    print("# load data", datetime.now())
-    # Load documents from the data directory into the Vector Store Index
-    documents = SimpleDirectoryReader(DATA_DIR).load_data()
-
-    # Create Vector Store Index with HuggingFace Embedding
-    index = VectorStoreIndex.from_documents(documents, embed_model=embed_model)
+    
+    DOCUMENTS_DIR = "docs"
+    PERSIST_DIR = "storage"
+    if not os.path.exists(PERSIST_DIR):
+        print("# load document, create index", datetime.now())
+        # load the documents and create the index
+        documents = SimpleDirectoryReader(DOCUMENTS_DIR).load_data()
+        # Create Vector Store Index with HuggingFace Embedding
+        index = VectorStoreIndex.from_documents(documents, embed_model=embed_model)
+        # store it for later
+        index.storage_context.persist(persist_dir=PERSIST_DIR)
+    else:
+        print("# load existing index", datetime.now())
+        # load the existing index
+        storage_context = StorageContext.from_defaults(persist_dir=PERSIST_DIR)
+        index = load_index_from_storage(storage_context, embed_model=embed_model)
 
     # Create Prompt Template for Text-based Q&A
     chat_text_qa_msgs = [
